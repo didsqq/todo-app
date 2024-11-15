@@ -30,6 +30,7 @@ migrate create -ext sql -dir ./schema -seq init
     -dir ./schema: Указывает директорию, в которой будут сохраняться миграционные файлы.
     -seq: Это флаг, который указывает, что миграции будут использовать последовательные номера.
     init: Это название миграции, которую вы хотите создать.
+migrate -path ./schema -database 'postgres://postgres:qwerty@localhost:5436/postgres?sslmode=disable' up - применить миграцию
 
 go get -u github.com/jmoiron/sqlx - для работы с бд
 github.com/lib/pq — это драйвер PostgreSQL для Go, который необходим для взаимодействия с базой данных PostgreSQL через стандартную библиотеку database/sql
@@ -37,3 +38,5 @@ github.com/lib/pq — это драйвер PostgreSQL для Go, который
 go get -u github.com/joho/godotenv - для работы с паролями
 
 go get -u github.com/sirupsen/logrus - работа с логами
+
+go get -u github.com/dgrijalva/jwt-go - работа с jwt

@@ -14,9 +14,9 @@ func NewHandler(services *service.Service) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-	router := gin.New()
+	router := gin.New() // создается gin.Engine для работы с маршрутизацией, обработкой http
 
-	auth := router.Group("/auth")
+	auth := router.Group("/auth") // все маршруты в блоке будут начинаться с /auth
 	{
 		auth.POST("/sign-up", h.signUp)
 		auth.POST("/sign-in", h.signIn)
