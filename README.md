@@ -16,11 +16,11 @@ docker run --name=todo-db -e POSTGRES_PASSWORD='qwerty' -p 5436:5432 -d --rm pos
     --rm — автоматически удаляет контейнер после его остановки, что удобно для тестов и разработки, но не рекомендуется для долгосрочного хранения данных.
     postgres — это имя образа Docker для PostgreSQL, который Docker загрузит и запустит. Если образ ещё не был загружен, Docker сначала скачает его из Docker Hub.
 
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest - postgres://<пользователь>:<пароль>@<хост>:<порт>/<имя_базы>?<параметры>
 export PATH=$PATH:$HOME/go/bin
 для работы с миграциями
 
-docker exec -it <container_name_or_id> bash - вход в контейнер
+docker exec -it <container_name_or_id> bash - вход в контейнер 
 psql -U postgres - подключение к postgres
 \dt - вывод таблицы
 

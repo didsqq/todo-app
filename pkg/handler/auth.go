@@ -38,7 +38,7 @@ func (h *Handler) signIn(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-
+	//logrus.Infof("username:%s pass:%s", input.Username, input.Password)
 	token, err := h.services.Authorization.GenerateToken(input.Username, input.Password) // метод для создания пользователя
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
