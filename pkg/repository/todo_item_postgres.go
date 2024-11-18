@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/didsqq/todo-app"
 	"github.com/jmoiron/sqlx"
@@ -44,4 +45,37 @@ func (r *TodoItemPostgres) GetById(listId int, itemId int) (todo.TodoItem, error
 	getByIdQuery := fmt.Sprintf("SELECT * FROM %s WHERE list_id=$1 AND id=$2", todoItemsTable)
 	err := r.db.Get(&item, getByIdQuery, listId, itemId)
 	return item, err
+}
+
+func (r *TodoItemPostgres) Update(listId int, itemId int, input todo.UpdateItemInput) error {
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argId := 1
+
+	if input.Title != nil {
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
+		args = append(args, *input.Title)
+		argId++
+	}
+
+	if input.Description != nil {
+		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
+		args = append(args, *input.Description)
+		argId++
+	}
+
+	if input.Done != nil {
+		setValues = append(setValues, fmt.Sprintf("done=$%d", argId))
+		args = append(args, *input.Done)
+		argId++
+	}
+
+	setQuery := strings.Join(setValues, ", ")
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE list_id=$%d AND id=$%d", todoItemsTable, setQuery, argId, argId+1)
+
+	args = append(args, listId, itemId)
+
+	_, err := r.db.Exec(query, args...)
+	return err
 }

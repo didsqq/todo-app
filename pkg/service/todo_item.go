@@ -37,3 +37,14 @@ func (s *TodoItemService) GetById(userId int, listId int, itemId int) (todo.Todo
 	}
 	return s.repo.GetById(listId, itemId)
 }
+
+func (s *TodoItemService) Update(userId int, listId int, itemId int, input todo.UpdateItemInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
+	_, err := s.listRepo.GetById(userId, listId)
+	if err != nil {
+		return err
+	}
+	return s.repo.Update(listId, itemId, input)
+}
