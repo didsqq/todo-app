@@ -84,6 +84,15 @@ func (r *TodoListPostgres) Update(userId int, listId int, input todo.UpdateListI
 
 	args = append(args, listId, userId) // добавляем в срез id листа и id юзера
 
-	_, err := r.db.Exec(query, args...) // выполняем запрос, передаем запрос и распаковываем срез на аргументы
+	update, err := r.db.Exec(query, args...) // выполняем запрос, передаем запрос и распаковываем срез на аргументы
+	if err != nil {
+		return err
+	}
+
+	result, err := update.RowsAffected()
+	if result == 0 {
+		err = errors.New("list does not exist")
+	}
+
 	return err
 }

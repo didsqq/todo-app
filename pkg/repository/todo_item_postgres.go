@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -47,6 +48,19 @@ func (r *TodoItemPostgres) GetById(listId int, itemId int) (todo.TodoItem, error
 	return item, err
 }
 
+func (r *TodoItemPostgres) Delete(listId int, itemId int) error {
+	deleteItemQuery := fmt.Sprintf("DELETE FROM %s WHERE list_id=$1 AND id=$2", todoItemsTable)
+	row, err := r.db.Exec(deleteItemQuery, listId, itemId)
+	if err != nil {
+		return err
+	}
+	result, err := row.RowsAffected()
+	if result == 0 {
+		err = errors.New("item does not exist")
+	}
+	return err
+}
+
 func (r *TodoItemPostgres) Update(listId int, itemId int, input todo.UpdateItemInput) error {
 	setValues := make([]string, 0)
 	args := make([]interface{}, 0)
@@ -76,6 +90,15 @@ func (r *TodoItemPostgres) Update(listId int, itemId int, input todo.UpdateItemI
 
 	args = append(args, listId, itemId)
 
-	_, err := r.db.Exec(query, args...)
+	update, err := r.db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	result, err := update.RowsAffected()
+	if result == 0 {
+		err = errors.New("item does not exist")
+	}
+
 	return err
 }
