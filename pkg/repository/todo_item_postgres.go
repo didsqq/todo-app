@@ -32,9 +32,16 @@ func (r *TodoItemPostgres) Create(userId int, listId int, item todo.TodoItem) (i
 	return id, tx.Commit()
 }
 
-func (r *TodoItemPostgres) GetAll(userId int, listId int) ([]todo.TodoItem, error) {
+func (r *TodoItemPostgres) GetAll(listId int) ([]todo.TodoItem, error) {
 	var items []todo.TodoItem
 	getAllQuery := fmt.Sprintf("SELECT * FROM %s WHERE list_id=$1", todoItemsTable)
 	err := r.db.Select(&items, getAllQuery, listId)
 	return items, err
+}
+
+func (r *TodoItemPostgres) GetById(listId int, itemId int) (todo.TodoItem, error) {
+	var item todo.TodoItem
+	getByIdQuery := fmt.Sprintf("SELECT * FROM %s WHERE list_id=$1 AND id=$2", todoItemsTable)
+	err := r.db.Get(&item, getByIdQuery, listId, itemId)
+	return item, err
 }
