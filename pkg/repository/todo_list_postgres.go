@@ -7,28 +7,27 @@ import (
 
 	"github.com/didsqq/todo-app"
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
 )
 
 type TodoListPostgres struct {
 	db *sqlx.DB
 }
 
-func NewTodoListService(db *sqlx.DB) *TodoListPostgres {
+func NewTodoListPostgres(db *sqlx.DB) *TodoListPostgres {
 	return &TodoListPostgres{db: db}
 }
 
 func (r *TodoListPostgres) Create(userId int, list todo.TodoList) (int, error) {
-	tx, err := r.db.Begin()
+	tx, err := r.db.Begin() // начинает транзакцию
 	if err != nil {
 		return 0, err
 	}
 
 	var id int
 	createListQuery := fmt.Sprintf("INSERT INTO %s (title, description, user_id) VALUES ($1, $2, $3) RETURNING id", todoListsTable)
-	row := tx.QueryRow(createListQuery, list.Title, list.Description, userId)
+	row := tx.QueryRow(createListQuery, list.Title, list.Description, userId) // Возвращает объект *sql.Row, содержащий результат выполнения
 	if err := row.Scan(&id); err != nil {
-		tx.Rollback()
+		tx.Rollback() // отмена транзакции
 		return 0, err
 	}
 
@@ -63,31 +62,28 @@ func (r *TodoListPostgres) Delete(userId int, listId int) error {
 }
 
 func (r *TodoListPostgres) Update(userId int, listId int, input todo.UpdateListInput) error {
-	setValues := make([]string, 0)
-	args := make([]interface{}, 0)
-	argId := 1
+	setValues := make([]string, 0) // срез строк, нужен так как тайтла или описания может не быть, потом собирается в одну строку
+	args := make([]interface{}, 0) // срез значений аргументов передаваемых в запрос
+	argId := 1                     // счетчик плейсхолдеров
 
-	if input.Title != nil {
-		setValues = append(setValues, fmt.Sprintf("title=$%d", argId))
-		args = append(args, *input.Title)
-		argId++
+	if input.Title != nil { // если тайтл не пустой
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argId)) // добаляем в срез значение для тайтла
+		args = append(args, *input.Title)                              // добавляем в срез новое значение тайтла
+		argId++                                                        // увеличиваем счетчик, так как тайтл не пустой
 	}
 
-	if input.Description != nil {
+	if input.Description != nil { // для описания аналогично
 		setValues = append(setValues, fmt.Sprintf("description=$%d", argId))
 		args = append(args, *input.Description)
 		argId++
 	}
 
-	setQuery := strings.Join(setValues, ", ")
+	setQuery := strings.Join(setValues, ", ") // соединяем срез с описанием и тайтлом
 
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE id=$%d AND user_id=$%d", todoListsTable, setQuery, argId, argId+1)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id=$%d AND user_id=$%d", todoListsTable, setQuery, argId, argId+1) // sql запрос
 
-	args = append(args, listId, userId)
+	args = append(args, listId, userId) // добавляем в срез id листа и id юзера
 
-	logrus.Debugf("updatedQuery: %s", query)
-	logrus.Debugf("args: %s", args)
-
-	_, err := r.db.Exec(query, args...)
+	_, err := r.db.Exec(query, args...) // выполняем запрос, передаем запрос и распаковываем срез на аргументы
 	return err
 }
