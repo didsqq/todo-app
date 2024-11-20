@@ -43,7 +43,7 @@ func main() {
 	handlers := handler.NewHandler(services) // http-обработчики используют методы service
 
 	srv := new(todo.Server) // создается сервер
-	go func() {
+	go func() {             // запускаем в отдельной горутине, чтобы запуск сервера не блокировал основной поток
 		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil { // запускается на порту из конф файла, возвращаются маршруты для http-обработчиков
 			logrus.Fatalf("error occured while running http server: %s", err.Error())
 		}
@@ -51,9 +51,9 @@ func main() {
 
 	logrus.Print("TodoApp Started")
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-	<-quit
+	quit := make(chan os.Signal, 1)                      // создается канал для получения сигналов завершения
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT) // подписываемся на сигналы SIGTERM, SIGINT обычно это ctrl+c
+	<-quit                                               // блокирует выполениение, пока не будет получен сигнал завершения
 
 	logrus.Print("TodoApp Shutting Down")
 
